@@ -1,3 +1,4 @@
+临时邮箱
 https://zh.mytrashmailer.com
 
 mail.bccto.me
