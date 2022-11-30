@@ -1,0 +1,27 @@
+import pandas as pd
+
+form = pd.read_excel('C:\\Users\\vinsean\\Desktop\\团体健康数据-20221127.xlsx',header=None)
+
+form = form.drop([0,1,2])
+form.columns = ['序号', '姓名', '备注', '粤康码颜色', '原因', '详细说明', '解除指引', '检测结果', '采样时间1', '检测时间', '采样时间2', '疫苗接种' ]
+
+#取某个值
+#a = form['姓名'].iloc[0]
+form['采样时间1'] = form['采样时间1'].str.split(' ',expand = True)[0]
+form['检测时间'] = form['检测时间'].str.split(' ',expand = True)[0]
+form['采样时间2'] = form['采样时间2'].str.split(' ',expand = True)[0]
+
+finishlist = form[form['采样时间1'].str.contains('2022-11-27') | form['采样时间2'].str.contains('2022-11-27')]['姓名']
+
+namestr = ','.join(finishlist)
+
+key = ["蔡恒光","曾圣朗","曾鑫楠","陈家俊","陈俊儒","陈雅琳","陈子乐","邓振宇","付可馨","傅梦瑶","傅直霖","古文勋","李宸熙","李思婷","廖慧瑶","林凯欢","林悦娉","罗宝砚","罗晞妍","罗心雨","罗学为","罗颖晴","罗颖熙","彭晨峰","吴慧婷","吴俊承","吴梓诚","谢建航","谢紫宁","杨希","杨端渝","杨梦琪","叶绮珊","张俊鑫","张钰桐","郑狄瑞","钟嘉懿","钟贤军","钟卓汝","朱子琳","庄嘉熙","庄宇旭","邹雅芳"]
+
+
+for i in key[:]:
+	if i in namestr:
+		key.remove(i)
+if len(key) == 0:
+	print("恭喜！全部已完成。")
+else:
+	print(key)
