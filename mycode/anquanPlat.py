@@ -4,8 +4,9 @@ import requests
 
 '''
 1.修改学生名单url
-2.修改未完成平台的学生名单（3处）
+2.修改未完成平台的学生名单
 3.修改班主任cookie
+4.修改活动主题id
 '''
 
 
@@ -15,6 +16,7 @@ def loginPlat(session, student, headers):
 
     userData = {"username": name, "password": "Ab123456", "loginOrigin": 1}
     logres = session.post(loginUrl, json=userData, headers=headers).json()
+    print('\n')
     print(student[0]+":")
     print(logres['err_desc'])
 
@@ -24,14 +26,12 @@ def loginPlat(session, student, headers):
         #管理员Cookie
         gheader = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-            #'Cookie': 'SpecialGID = 8b0b7f7cc7c44030a28d39b69737069b;uuid_dd39b150 - a934 - 11e9 - b073 - e9b8d9c630e7 = fd5c360e - e0f1 - 43a2 - 84f7 - e722e5360f12;accessId = dd39b150 - a934 - 11e9 - b073 - e9b8d9c630e7;href = https % 3A % 2F % 2Fjiangmen.xueanquan.com % 2Flogin.html;ASP.NET_SessionId = gw1unorxc3s3bqt2erbm2zhd;_UCodeStr = { % 0d % a"Grade": 4, % 0d % 0a"ClassRoom": 533908841, % 0d % 0a"CityCode": 120017 % 0d % 0a}; SafeApp = true;_UserID = aNWVg82ctFcU7bw15m + xkcfDW5AgaF3uvCrjO4M9asA =;RiskApp = true;PeiXun_UserID = BE80E175CE7735332909F542A3993661;Training = true;qimo_seosource_0 = % E7 % AB % 99 % E5 % 86 % 85;qimo_seokeywords_0 =;qimo_seosource_dd39b150 - a934 - 11e9 - b073 - e9b8d9c630e7 = % E7 % AB % 99 % E5 % 86 % 85;qimo_seokeywords_dd39b150 - a934 - 11e9 - b073 - e9b8d9c630e7 =;qimo_xstKeywords_dd39b150 - a934 - 11e9-b073-e9b8d9c630e7=;UserID=B870FF5CD7E11693F318AF60966A7781;ServerSide=https://jiangmen.xueanquan.com;pageViewNum=47'
-            'Cookie':'qimo_seosource_0=%E7%AB%99%E5%86%85; qimo_seokeywords_0=; uuid_dd39b150-a934-11e9-b073-e9b8d9c630e7=ab282226-7003-440b-a556-bd4cbd7d5662; qimo_seosource_dd39b150-a934-11e9-b073-e9b8d9c630e7=%E7%AB%99%E5%86%85; qimo_seokeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; qimo_xstKeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; href=https%3A%2F%2Fjiangmen.xueanquan.com%2Flogin.html; accessId=dd39b150-a934-11e9-b073-e9b8d9c630e7; ASP.NET_SessionId=dspqvujdr513ygnxg2ozw5d0; UserID=6C811E0E8AF1C013FE3F6A841B4F084A; ServerSide=https://jiangmen.xueanquan.com; _UCodeStr={%0d%0a  "Grade": 5,%0d%0a  "ClassRoom": 533908960,%0d%0a  "CityCode": 120017%0d%0a}; _UserID=KPKy5xA86SEC2dnmlaX6oYh709sj4EGdLzyv5HPMnfk=; SafeApp=true; RiskApp=true; PeiXun_UserID=26BF96B8787BF0E02EC3609F8067252D; Training=true; pageViewNum=5'
+            'Cookie': ''
+            #'Cookie':''
         }
 
         #重置密码
-        resp = requests.post(
-            'https://jiangmen.xueanquan.com/eduadmin/ClassManagement/StudentPassWordReset?studentid=' + str(student[1]),
-            headers=gheader).json()
+        resp = requests.post('https://jiangmen.xueanquan.com/eduadmin/ClassManagement/StudentPassWordReset?studentid=' + str(student[1]),headers=gheader).json()
         print("  "+resp['message'])
 
         userData = {"username": name, "password": "123456", "loginOrigin": 1}
@@ -42,8 +42,7 @@ def loginPlat(session, student, headers):
         #设置密码
         session.headers['Authorization'] = logres['data']['token']
         setpd = {"oldPwd": "123456", "newPwd": "Ab123456"}
-        setpdres = session.post('https://appapi.xueanquan.com/usercenter/api/users/edit-pwd-byoldpwd?api-version=2',
-                                json=setpd, headers=headers).json()
+        setpdres = session.post('https://appapi.xueanquan.com/usercenter/api/users/edit-pwd-byoldpwd?api-version=2',json=setpd, headers=headers).json()
         print("   密码" +setpdres['message'])
 
         userData = {"username": name, "password": "Ab123456", "loginOrigin": 1}
@@ -66,7 +65,7 @@ def study(users):
                 print(studentName + '登陆成功')
 
                 couseres = session.get(courseurl).json()
-
+                
                 couseNum = couseres['result']
 
                 if couseNum == 0:
@@ -85,12 +84,14 @@ def study(users):
                                 #专题活动学习
                                 if couse['subTitle'] == '专题活动':
 
-                                    step1data = {"specialId": 839, "step": 1}
+                                    
+                                    huodongId = 858
+                                    step1data = {"specialId": huodongId, "step": 1}
                                     session.post(huodongSignUrl, json=step1data).json()
-                                    step2data = {"specialId": 839, "step": 2}
+                                    step2data = {"specialId": huodongId, "step": 2}
                                     session.post(huodongSignUrl, json=step2data).json()
                                     huodongres = session.get(
-                                        'https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/records/finish-status?specialId=839').json()
+                                        'https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/records/finish-status?specialId='+str(huodongId)).json()
                                     if huodongres['finishStatus']:
                                         huodongfinishNum = huodongfinishNum + 1
                                         print('   专题活动：' + couseTitle + '完成')
@@ -154,8 +155,12 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 session.headers = headers
 
 
-users = pd.read_excel('C:\\Users\\retir\\Desktop\\四3班\\账号资料\\zhu.xlsx')
-todo = ['周晓平', '朱安轩']
-todolist = users[users['name'].isin(todo)]
+users = pd.read_excel('C:\\Users\\retir\\Desktop\\四3班\\账号资料\\huang.xlsx')
+#users = users.drop(index=users[(users.name == '谢紫宁')].index.tolist())
+
+todo = ['谢紫宁', '杨希']
+#todolist = users[users['name'].isin(todo)]
+
+todolist = users[users['name'].isin(users['name'])]
 
 study(todolist)
