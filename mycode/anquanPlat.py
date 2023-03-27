@@ -1,12 +1,13 @@
 import pandas as pd
 import requests
+import re
+import time
 
 
 '''
 1.修改学生名单url
-2.修改未完成平台的学生名单
+2.修改未完成平台的学生名单（3处）
 3.修改班主任cookie
-4.修改活动主题id
 '''
 
 
@@ -26,8 +27,7 @@ def loginPlat(session, student, headers):
         #管理员Cookie
         gheader = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-            'Cookie': ''
-            #'Cookie':''
+            'Cookie':''
         }
 
         #重置密码
@@ -84,25 +84,34 @@ def study(users):
                                 #专题活动学习
                                 if couse['subTitle'] == '专题活动':
 
+                                    huodongurl = couse['url']
+                                    huodongmessageurl = huodongurl.replace('index.html', 'message.html')
+                                    html = session.get(huodongmessageurl).text
+                                    title=re.findall('<title>(.+)</title>',html)
+
+                                    if len(title)>0:
                                     
-                                    huodongId = 858
-                                    step1data = {"specialId": huodongId, "step": 1}
-                                    session.post(huodongSignUrl, json=step1data).json()
-                                    step2data = {"specialId": huodongId, "step": 2}
-                                    session.post(huodongSignUrl, json=step2data).json()
-                                    huodongres = session.get(
-                                        'https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/records/finish-status?specialId='+str(huodongId)).json()
-                                    if huodongres['finishStatus']:
-                                        huodongfinishNum = huodongfinishNum + 1
-                                        print('   专题活动：' + couseTitle + '完成')
+                                        huodongId = str(title[0])
+                                        step1data = {"specialId": huodongId, "step": 1}
+                                        session.post(huodongSignUrl, json=step1data).json()
+                                        step2data = {"specialId": huodongId, "step": 2}
+                                        session.post(huodongSignUrl, json=step2data).json()
+                                        huodongres = session.get(
+                                            'https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/records/finish-status?specialId='+str(huodongId)).json()
+                                        if huodongres['finishStatus']:
+                                            huodongfinishNum = huodongfinishNum + 1
+                                            print('   专题活动：' + couseTitle + '完成')
+                                        else:
+                                            print('   专题活动：' + couseTitle + '×××未完成×××')
                                     else:
-                                        print('   专题活动：' + couseTitle + '×××未完成×××')
+                                        print('specialId为空')
 
                                 #安全技能学习
                                 elif couse['subTitle'] == '安全学习':
+                                    
 
                                     print('   正在学习:' + couseTitle)
-                                    couseId = couse['url'].split('=')[-1]
+                                    couseId = couse['url'].split('=')[2].split('&')[0]
 
                                     videores = session.get(couse['url'])
 
@@ -112,8 +121,7 @@ def study(users):
 
                                     session.get(testPaperUrl + couseId)
                                     testres = session.get(testPaperUrl + couseId).json()
-
-
+                                  
                                     fid = testres['result']['fid']
                                     workId = testres['result']['workId']
 
@@ -136,7 +144,7 @@ def study(users):
 
     print('安全平台完成情况：')
     print('  活动专题完成人数：' + str(huodongfinishNum) +',未完成人数：' +str(len(users['name'])-huodongfinishNum))
-    print('  安全技能完成人数：' + str(huodongfinishNum) +',未完成人数：' +str(len(users['name'])-huodongfinishNum))
+    print('  安全技能完成人数：' + str(skillfinishNum) +',未完成人数：' +str(len(users['name'])-skillfinishNum))
 
 
 
@@ -155,7 +163,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 session.headers = headers
 
 
-users = pd.read_excel('C:\\Users\\retir\\Desktop\\四3班\\账号资料\\huang.xlsx')
+users = pd.read_excel('C:\\Users\\retir\\Desktop\\账号资料\\zhu.xlsx')
 #users = users.drop(index=users[(users.name == '谢紫宁')].index.tolist())
 
 todo = ['谢紫宁', '杨希']
