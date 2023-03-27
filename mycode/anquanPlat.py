@@ -84,6 +84,7 @@ def study(users):
                                 #专题活动学习
                                 if couse['subTitle'] == '专题活动':
 
+                                    #获取specialId
                                     huodongurl = couse['url']
                                     huodongmessageurl = huodongurl.replace('index.html', 'message.html')
                                     html = session.get(huodongmessageurl).text
