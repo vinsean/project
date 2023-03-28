@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 import re
-import time
+import datetime
 
 
 '''
@@ -27,7 +27,8 @@ def loginPlat(session, student, headers):
         #管理员Cookie
         gheader = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-            'Cookie':''
+            #'Cookie': 'SpecialGID=49ff050117b9427f94db4a9ec7187064; accessId=dd39b150-a934-11e9-b073-e9b8d9c630e7; SafeApp=true; RiskApp=true; Training=true; uuid_dd39b150-a934-11e9-b073-e9b8d9c630e7=9679805b-ad5a-42a1-9fea-5c2bd29b8f1c; href=https%3A%2F%2Fjiangmen.xueanquan.com%2Flogin.html; ASP.NET_SessionId=biesenhpre20xtdhndfozh2k; _UCodeStr={%0d%0a  "Grade": 4,%0d%0a  "ClassRoom": 533908841,%0d%0a  "CityCode": 120017%0d%0a}; UserID=B870FF5CD7E11693F318AF60966A7781; ServerSide=https://jiangmen.xueanquan.com; _UserID=aNWVg82ctFcU7bw15m+xkcfDW5AgaF3uvCrjO4M9asA=; PeiXun_UserID=BE80E175CE7735332909F542A3993661; qimo_seosource_0=%E7%AB%99%E5%86%85; qimo_seokeywords_0=; qimo_seosource_dd39b150-a934-11e9-b073-e9b8d9c630e7=%E7%AB%99%E5%86%85; qimo_seokeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; qimo_xstKeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; pageViewNum=47'
+            'Cookie':'SpecialGID=49ff050117b9427f94db4a9ec7187064; qimo_seosource_0=%E7%AB%99%E5%86%85; qimo_seokeywords_0=; uuid_dd39b150-a934-11e9-b073-e9b8d9c630e7=c3bf6d6f-cd24-46ec-912c-75fa9a62ccca; qimo_seosource_dd39b150-a934-11e9-b073-e9b8d9c630e7=%E7%AB%99%E5%86%85; qimo_seokeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; qimo_xstKeywords_dd39b150-a934-11e9-b073-e9b8d9c630e7=; href=https%3A%2F%2Fjiangmen.xueanquan.com%2Flogin.html; accessId=dd39b150-a934-11e9-b073-e9b8d9c630e7; ASP.NET_SessionId=m0d5ujnz4k4xs3lnyrdgfuqi; UserID=6C811E0E8AF1C013FE3F6A841B4F084A; ServerSide=https://jiangmen.xueanquan.com; _UCodeStr={%0d%0a  "Grade": 5,%0d%0a  "ClassRoom": 533908960,%0d%0a  "CityCode": 120017%0d%0a}; _UserID=KPKy5xA86SEC2dnmlaX6oYh709sj4EGdLzyv5HPMnfk=; SafeApp=true; RiskApp=true; PeiXun_UserID=26BF96B8787BF0E02EC3609F8067252D; Training=true; pageViewNum=3'
         }
 
         #重置密码
@@ -52,8 +53,9 @@ def loginPlat(session, student, headers):
 
 def study(users):
     couseNum = 0
-    huodongfinishNum = 0
-    skillfinishNum = 0
+    huodongunfinishNum = 0
+    skillunfinishNum = 0
+
     if len(users) > 0:
         for i in range(len(users)):
             student = users.iloc[i].values
@@ -69,13 +71,19 @@ def study(users):
                 couseNum = couseres['result']
 
                 if couseNum == 0:
-                    huodongfinishNum = huodongfinishNum + 1
-                    skillfinishNum = skillfinishNum + 1
                     print("恭喜" + studentName + "不用学习")
                 else:
                     homeworklistres = session.get(homeworklistUrl).json()
 
                     if len(homeworklistres) > 0:
+
+                        #需要完成专题活动、安全技能课程数
+                        huodongtotal = 0
+                        skilltotal = 0 
+
+                        huodongfinishNum = 0
+                        skillfinishNum = 0
+
                         for couse in homeworklistres:
                             if couse['workStatus'] == 'UnFinish':
 
@@ -84,7 +92,8 @@ def study(users):
                                 #专题活动学习
                                 if couse['subTitle'] == '专题活动':
 
-                                    #获取specialId
+                                    huodongtotal = huodongtotal + 1
+
                                     huodongurl = couse['url']
                                     huodongmessageurl = huodongurl.replace('index.html', 'message.html')
                                     html = session.get(huodongmessageurl).text
@@ -110,6 +119,7 @@ def study(users):
                                 #安全技能学习
                                 elif couse['subTitle'] == '安全学习':
                                     
+                                    skilltotal = skilltotal + 1
 
                                     print('   正在学习:' + couseTitle)
                                     couseId = couse['url'].split('=')[2].split('&')[0]
@@ -141,11 +151,17 @@ def study(users):
 
                             else:
                                 continue
+
+                            if huodongfinishNum < huodongtotal:
+                                huodongunfinishNum = huodongunfinishNum + 1
+                            
+                            if skillfinishNum < skilltotal:
+                                skillunfinishNum = skillunfinishNum + 1
                     
 
     print('安全平台完成情况：')
-    print('  活动专题完成人数：' + str(huodongfinishNum) +',未完成人数：' +str(len(users['name'])-huodongfinishNum))
-    print('  安全技能完成人数：' + str(skillfinishNum) +',未完成人数：' +str(len(users['name'])-skillfinishNum))
+    print('  活动专题完成人数：' + str(len(users['name'])-huodongunfinishNum) +',未完成人数：' + str(huodongunfinishNum))
+    print('  安全技能完成人数：' + str(len(users['name'])-skillunfinishNum) +',未完成人数：' + str(skillunfinishNum))
 
 
 
@@ -164,7 +180,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 session.headers = headers
 
 
-users = pd.read_excel('C:\\Users\\retir\\Desktop\\账号资料\\zhu.xlsx')
+users = pd.read_excel('C:\\Users\\retir\\Desktop\\四3班\\账号资料\\zhu.xlsx')
 #users = users.drop(index=users[(users.name == '谢紫宁')].index.tolist())
 
 todo = ['谢紫宁', '杨希']
