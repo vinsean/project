@@ -2,6 +2,8 @@ import pandas as pd
 import requests
 import re
 import datetime
+from random import randint
+from urllib import parse
 
 
 '''
@@ -50,6 +52,32 @@ def loginPlat(session, student, headers):
         logres = session.post(loginUrl, json=userData, headers=headers).json()
 
     return logres
+
+def summer():
+    userinfores = session.get('https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/users/user-info').json()
+    truename = userinfores['trueName']
+    sex = str(userinfores['sex'])
+
+    r = randint(1000000000000000,9999999999999999)/10000000000000000                                  
+    answerstr = '[{"ID":1,"N":'+ sex +',"M":""},{"ID":2,"N":"1","M":""},{"ID":3,"N":"4","M":""},{"ID":4,"N":"2","M":""},{"ID":5,"N":"3","M":""},{"ID":6,"N":"2","M":""},{"ID":7,"N":"3","M":""},{"ID":8,"N":"2","M":""},{"ID":9,"N":"2","M":""},{"ID":10,"N":"2","M":""},{"ID":11,"N":"3","M":""},{"ID":12,"N":"1","M":""},{"ID":13,"N":"3","M":""},{"ID":14,"N":"3","M":""},{"ID":15,"N":"1","M":""},{"ID":16,"N":"1","M":""},{"ID":17,"N":"2","M":""},{"ID":18,"N":"1","M":""},{"ID":19,"N":"3","M":""},{"ID":20,"N":"1","M":""},{"ID":21,"N":"2","M":""},{"ID":22,"N":"1","M":""},{"ID":23,"N":"2","M":""},{"ID":24,"N":"2","M":""},{"ID":25,"N":"2","M":""},{"ID":26,"N":"2","M":""},{"ID":27,"N":"2","M":""},{"ID":28,"N":"3","M":""},{"ID":29,"N":"1","M":""},{"ID":30,"N":"2","M":""},{"ID":31,"N":"2","M":""},{"ID":32,"N":"3","M":""},{"ID":33,"N":"3","M":""},{"ID":34,"N":"1","M":""},{"ID":35,"N":"2","M":""},{"ID":36,"N":"5","M":""},{"ID":37,"N":"5","M":""},{"ID":38,"N":"5","M":""},{"ID":39,"N":"5","M":""},{"ID":40,"N":"5","M":""},{"ID":41,"N":"1","M":""},{"ID":42,"N":"5","M":""},{"ID":43,"N":"5","M":""},{"ID":44,"N":"5","M":""},{"ID":45,"N":"5","M":""},{"ID":46,"N":"5","M":""},{"ID":47,"N":"1","M":""},{"ID":48,"N":"5","M":""},{"ID":49,"N":"5","M":""},{"ID":50,"N":"5","M":""},{"ID":51,"N":"5","M":""},{"ID":52,"N":"1","M":""},{"ID":53,"N":"5","M":""},{"ID":54,"N":"5","M":""},{"ID":55,"N":"5","M":""},{"ID":56,"N":"5","M":""},{"ID":57,"N":"5","M":""},{"ID":58,"N":"5","M":""},{"ID":59,"N":"1","M":""},{"ID":60,"N":"5","M":""},{"ID":61,"N":"5","M":""},{"ID":62,"N":"5","M":""},{"ID":63,"N":"4","M":""},{"ID":64,"N":"5","M":""},{"ID":65,"N":"5","M":""},{"ID":66,"N":"5","M":""},{"ID":67,"N":"5","M":""},{"ID":68,"N":"5","M":""},{"ID":69,"N":"5","M":""},{"ID":70,"N":"5","M":""},{"ID":71,"N":"5","M":""},{"ID":72,"N":"5","M":""},{"ID":73,"N":"5","M":""},{"ID":74,"N":"5","M":""}]'
+    sstr1 = '&schoolYear=2023&semester=2&userType=0&answerJson='
+    sstr2 = '&prv=12&city=120017&county=120017004&school=331227891&grade=5&Class=533908960&comefrom=20230&version=2&prvName2=&cityName2=&shcoolName=%E5%8F%B0%E5%B1%B1%E5%B8%82%E8%B5%A4%E6%BA%AA%E9%95%87%E4%B8%AD%E5%BF%83%E5%B0%8F%E5%AD%A6&TrueName='
+    substr = 'r='+str(r) + sstr1 + parse.quote(answerstr) + sstr2 + parse.quote(truename)
+  
+    signdata = {"schoolYear":2023,"semester":2,"step":1}
+    signres = session.post('https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/holiday/sign', json=signdata).json()
+
+    headers = {"Content-Type":"application/x-www-form-urlencoded"}
+    infores = session.post('https://huodong.xueanquan.com/HolidayService/SubmitTest', headers = headers, data=substr).json()
+    signdata = {"schoolYear":2023,"semester":2,"step":2}
+    signres = session.post('https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/holiday/sign', json=signdata).json()
+
+    huodongres = session.get('https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/holiday/finish-status?schoolYear=2023&semester=2').json()
+    if huodongres['finishStatus']:
+        print('   暑假专题完成')
+    else:
+        print('   暑假专题×××未完成×××')
+
 
 def study(users):
     couseNum = 0
@@ -106,6 +134,7 @@ def study(users):
                                         session.post(huodongSignUrl, json=step1data).json()
                                         step2data = {"specialId": huodongId, "step": 2}
                                         session.post(huodongSignUrl, json=step2data).json()
+                                        '''
                                         huodongres = session.get(
                                             'https://huodongapi.xueanquan.com/p/guangdong/Topic/topic/platformapi/api/v1/records/finish-status?specialId='+str(huodongId)).json()
                                         if huodongres['finishStatus']:
@@ -113,6 +142,8 @@ def study(users):
                                             print('   专题活动：' + couseTitle + '完成')
                                         else:
                                             print('   专题活动：' + couseTitle + '×××未完成×××')
+                                        '''
+                                        summer()
                                     else:
                                         print('specialId为空')
 
@@ -181,7 +212,7 @@ session.headers = headers
 
 
 users = pd.read_excel('C:\\Users\\retir\\Desktop\\四3班\\账号资料\\zhu.xlsx')
-#users = users.drop(index=users[(users.name == '谢紫宁')].index.tolist())
+#users = users.drop(index=users[(users.name == '罗宝砚') | (users.name == '罗颖晴')].index.tolist())
 
 todo = ['谢紫宁', '杨希']
 #todolist = users[users['name'].isin(todo)]
@@ -189,3 +220,4 @@ todo = ['谢紫宁', '杨希']
 todolist = users[users['name'].isin(users['name'])]
 
 study(todolist)
+session.close()
